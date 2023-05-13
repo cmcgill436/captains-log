@@ -4,6 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const { connect, connection } = require("mongoose");
 const methodOverride = require("method-override");
+const logs = require("./models/logs");
 
 // Database connection
 connect(process.env.MONGO_URI, {
@@ -37,57 +38,15 @@ app.get("/logs/new", (req, res) => {
   res.render("New");
 });
 
-//Destroy
-app.delete("/:id", async (req, res) => {
-  try {
-    await Log.findByIdAndDelete(req.params.id);
-    res.status(200).redirect("/logs");
-  } catch (err) {
-    res.status(400).send(err);
+// //Create Route
+app.post("/logs", (req, res) => {
+  if (req.body.shipIsBroken === "true") {
+    req.body.shipIsBroken = true;
+  } else {
+    req.body.shipIsBroken = false;
   }
-});
-
-//Update
-app.put("/:id", async (req, res) => {
-  try {
-    req.body.shipIsBroken = req.body.shipIsBroken === "on";
-    const updatedLog = await Log.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    console.log(updatedLog);
-    res.redirect(`/logs/${req.params.id}`);
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-//Create Route
-app.post("/logs", async (req, res) => {
-  try {
-    req.body.shipIsBroken = req.body.shipIsBroken === "on";
-    const newLog = await Log.create(req.body);
-    console.log(newLog);
-    res.redirect("/logs");
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-//Edit
-router.get("/:id/edit", async (req, res) => {
-  try {
-    const foundLog = await Log.findById(req.params.id);
-    res.render("logs/Edit", {
-      log: foundLog,
-    });
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-//Show Route
-app.get("/logs/:id", (req, res) => {
-  res.render("Show");
+  logs.create(req.body);
+  res.redirect("/logs");
 });
 
 // Listen

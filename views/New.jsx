@@ -4,7 +4,7 @@ const DefaultLayout = require("./layout/Default");
 class New extends React.Component {
   render() {
     return (
-      <DefaultLayout title="Enter a New Log" link="/" text="Home">
+      <DefaultLayout title="Enter a New Log" link="/logs" text="Home">
         <form action="/logs" method="POST">
           Title: <input type="text" name="title" />
           <br />

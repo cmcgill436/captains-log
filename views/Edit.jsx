@@ -5,7 +5,7 @@ class Edit extends React.Component {
   render() {
     const log = this.props.log;
     return (
-      <DefaultLayout title="Edit Page" link="/" text="Home">
+      <DefaultLayout title="Edit Page" link="/logs" text="Home">
         <form action={`/logs/${log._id}?_method=PUT`} method="POST">
           Title: <input type="text" name="title" defaultValue={log.title} />
           <br />

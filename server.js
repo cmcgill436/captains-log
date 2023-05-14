@@ -5,14 +5,15 @@ const PORT = process.env.PORT || 3000;
 const Log = require("./models/log");
 const { connect, connection } = require("mongoose");
 const methodOverride = require("method-override");
-// const logsController = require("./controllers/logsController");
+const logsController = require("./controllers/logs");
 
 // Database connection
 connect(process.env.MONGO_URI, {
+  // Having these two properties set to true is best practice when connecting to MongoDB
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
+// This line of code will run the function below once the connection to MongoDB has been established.
 connection.once("open", () => {
   console.log("connected to mongo");
 });
@@ -20,98 +21,34 @@ connection.once("open", () => {
 // View Engine Middleware Configure
 const reactViewsEngine = require("jsx-view-engine").createEngine();
 app.engine("jsx", reactViewsEngine);
+// This line tells the render method the default file extension to look for.
 app.set("view engine", "jsx");
+// This line sets the render method's default location to look for a jsx file to render. Without this line of code we would have to specific the views directory everytime we use the render method
 app.set("views", "./views");
 
-//MiddleWare
-app.use(express.urlencoded({ extended: false }));
+// Middleware
+app.use(express.urlencoded({ extended: false })); // This enables the req.body
+//after app has been defined
+//use methodOverride.  We'll be adding a query parameter to our delete form named _method
 app.use(methodOverride("_method"));
+// this tells the server to go look for static assests in the public folder like css, imgs, or fonts
 app.use(express.static("public"));
-
-// //Custom Middleware
-// app.use((req, res, next) => {
-//   console.log("Middleware running...");
-//   next();
-// });
-
-// //Routes
-// app.use("/", logsController);
-
-//=======I.N.D.U.C.E.S. / 7 RESTFUL ROUTES ======
-
-//Index Route
-app.get("/", async (req, res) => {
-  console.log("Index Controller Func. running...");
-  try {
-    const foundLog = await Log.find({});
-    res.status(200).render("Index", { logs: foundLog });
-  } catch (err) {
-    res.status(400).send(err);
-  }
+// Custom Middleware
+app.use((req, res, next) => {
+  console.log("Middleware running...");
+  next();
 });
 
-//New Route
-app.get("/logs/new", (req, res) => {
-  res.render("New");
-});
+// Routes
+app.use("/logs", logsController);
 
-app.delete("/logs/:id", async (req, res) => {
-  try {
-    await Log.findByIdAndDelete(req.params.id);
-    res.status(200).redirect("/");
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-//Update/Put
-app.put("/logs/:id", async (req, res) => {
-  try {
-    req.body.shipIsBroken = req.body.shipIsBroken === "true";
-    const updatedLog = await Log.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    console.log(updatedLog);
-    res.redirect(`/logs/${req.params.id}`);
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-// //Create Route
-app.post("/logs", async (req, res) => {
-  try {
-    req.body.shipIsBroken = req.body.shipIsBroken === "true";
-    const newLog = await Log.create(req.body);
-    console.log(newLog);
-    res.redirect("/");
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-// Edit Route
-app.get("/logs/:id/edit", async (req, res) => {
-  try {
-    const foundLog = await Log.findById(req.params.id);
-    res.render("Edit", {
-      log: foundLog,
-    });
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-//Show Route
-app.get("/logs/:id", async (req, res) => {
-  try {
-    const foundLog = await Log.findById(req.params.id);
-    res.render("Show", {
-      log: foundLog,
-    });
-  } catch (err) {
-    res.status(400).send(err);
-  }
+app.get("/*", (req, res) => {
+  res.send(`
+    <div>
+      404 this page doesn't exist! <br />
+      <a href="/logs">Captain's Log</a> <br />
+    </div
+  `);
 });
 
 // Listen

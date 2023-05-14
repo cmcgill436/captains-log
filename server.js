@@ -2,9 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const Log = require("./models/log");
 const { connect, connection } = require("mongoose");
 const methodOverride = require("method-override");
-const logs = require("./models/logs");
+// const logsController = require("./controllers/logsController");
 
 // Database connection
 connect(process.env.MONGO_URI, {
@@ -22,15 +23,31 @@ app.engine("jsx", reactViewsEngine);
 app.set("view engine", "jsx");
 app.set("views", "./views");
 
+//MiddleWare
 app.use(express.urlencoded({ extended: false }));
 app.use(methodOverride("_method"));
 app.use(express.static("public"));
 
+// //Custom Middleware
+// app.use((req, res, next) => {
+//   console.log("Middleware running...");
+//   next();
+// });
+
+// //Routes
+// app.use("/", logsController);
+
 //=======I.N.D.U.C.E.S. / 7 RESTFUL ROUTES ======
 
 //Index Route
-app.get("/logs", (req, res) => {
-  res.render("Index");
+app.get("/", async (req, res) => {
+  console.log("Index Controller Func. running...");
+  try {
+    const foundLog = await Log.find({});
+    res.status(200).render("Index", { logs: foundLog });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
 //New Route
@@ -39,14 +56,15 @@ app.get("/logs/new", (req, res) => {
 });
 
 // //Create Route
-app.post("/logs", (req, res) => {
-  if (req.body.shipIsBroken === "true") {
-    req.body.shipIsBroken = true;
-  } else {
-    req.body.shipIsBroken = false;
+app.post("/logs", async (req, res) => {
+  try {
+    req.body.shipIsBroken = req.body.shipIsBroken === "true";
+    const newLog = await Log.create(req.body);
+    console.log(newLog);
+    res.redirect("/");
+  } catch (err) {
+    res.status(400).send(err);
   }
-  logs.create(req.body);
-  res.redirect("/logs");
 });
 
 // Listen

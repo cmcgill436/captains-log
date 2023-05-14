@@ -9,7 +9,6 @@ const logSchema = new Schema(
   { timestamps: true }
 );
 
-// creating a new model, same thing as mongoose.model
 const Log = model("Log", logSchema);
 
 module.exports = Log;

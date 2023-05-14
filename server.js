@@ -67,6 +67,18 @@ app.post("/logs", async (req, res) => {
   }
 });
 
+//Show Route
+app.get("/logs/:id", async (req, res) => {
+  try {
+    const foundLog = await Log.findById(req.params.id);
+    res.render("Show", {
+      log: foundLog,
+    });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 // Listen
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`);

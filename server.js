@@ -64,6 +64,20 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
+//Update/Put
+app.put("/logs/:id", async (req, res) => {
+  try {
+    req.body.shipIsBroken = req.body.shipIsBroken === "true";
+    const updatedLog = await Log.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    console.log(updatedLog);
+    res.redirect(`/logs/${req.params.id}`);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 // //Create Route
 app.post("/logs", async (req, res) => {
   try {
@@ -71,6 +85,18 @@ app.post("/logs", async (req, res) => {
     const newLog = await Log.create(req.body);
     console.log(newLog);
     res.redirect("/");
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Edit Route
+app.get("/logs/:id/edit", async (req, res) => {
+  try {
+    const foundLog = await Log.findById(req.params.id);
+    res.render("Edit", {
+      log: foundLog,
+    });
   } catch (err) {
     res.status(400).send(err);
   }
